@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, useState } from "react";
+
 type TopologyNode = {
   key: string;
   label: string;
@@ -12,6 +14,103 @@ type TopologyNode = {
   summary: string;
   connections: string[];
 };
+
+type UserFlowNode = {
+  id: string;
+  title: string;
+  summary: string;
+  badges: string[];
+  details: string;
+  systems: string[];
+  subflow: {
+    id: string;
+    label: string;
+    note: string;
+  }[];
+};
+
+const userFlowNodes: UserFlowNode[] = [
+  {
+    id: "visitor-web-app",
+    title: "Visitor Web App",
+    summary: "browser-based, usable anywhere",
+    badges: ["setup: low", "monthly: hosting"],
+    details: "The customer sees pricing, offer framing, and a clear call to book from any device.",
+    systems: ["Next.js site", "Hosting", "Analytics"],
+    subflow: [
+      { id: "landing", label: "Landing page", note: "Explains the experience and shows the offer." },
+      { id: "pricing", label: "Pricing + info", note: "Answers the basic questions before booking." },
+      { id: "cta", label: "CTA click", note: "Pushes the visitor into the actual booking path." },
+    ],
+  },
+  {
+    id: "booking-form",
+    title: "Booking Form",
+    summary: "captures the booking request",
+    badges: ["setup: 1-2 days", "monthly: form/tooling"],
+    details: "This is the commitment point where the visitor chooses the format, time, and contact details.",
+    systems: ["Booking UI", "Calendar", "Database"],
+    subflow: [
+      { id: "package", label: "Select package", note: "Pick session type or pricing option." },
+      { id: "time", label: "Choose time", note: "Reserve an available slot." },
+      { id: "details", label: "Enter details", note: "Collect name, contact info, and visit details." },
+      { id: "submit", label: "Submit request", note: "Create the booking record and move to payment." },
+    ],
+  },
+  {
+    id: "payment",
+    title: "Payment",
+    summary: "checkout and confirmation",
+    badges: ["setup: 1-2 days", "monthly: processor fees"],
+    details: "Payment confirms intent, captures revenue, and triggers the rest of the automated flow.",
+    systems: ["Stripe", "Backend/API", "Email"],
+    subflow: [
+      { id: "quote", label: "Quote shown", note: "Display the final price and what is included." },
+      { id: "checkout", label: "Checkout", note: "Take payment through the processor." },
+      { id: "confirm", label: "Confirmation sent", note: "Receipt and next-step confirmation go out automatically." },
+    ],
+  },
+  {
+    id: "access",
+    title: "Access",
+    summary: "unlocks Kisi, lights, or entry controls",
+    badges: ["setup: hardware", "monthly: access SaaS"],
+    details: "The system turns a paid booking into real-world access and environmental control.",
+    systems: ["Kisi", "Door controls", "Lights", "Automation"],
+    subflow: [
+      { id: "verify", label: "Booking verified", note: "Check valid booking state and timing." },
+      { id: "rule", label: "Access rule triggered", note: "Grant temporary permissions or entry logic." },
+      { id: "environment", label: "Door / lights enabled", note: "Make the physical session ready for arrival." },
+    ],
+  },
+  {
+    id: "session",
+    title: "Session",
+    summary: "staff and calendar coordination",
+    badges: ["setup: ops", "monthly: calendar/tools"],
+    details: "Once access is ready, the actual operating workflow kicks in for staff, timing, and customer experience.",
+    systems: ["Calendar", "Staff ops", "Notifications"],
+    subflow: [
+      { id: "staff", label: "Staff notified", note: "Alert staff or operators for the session." },
+      { id: "calendar", label: "Calendar reserved", note: "Lock in the facility and staffing window." },
+      { id: "arrival", label: "Visitor arrives", note: "Customer enters and checks in." },
+      { id: "run", label: "Sim session runs", note: "The actual baseball sim experience happens." },
+    ],
+  },
+  {
+    id: "follow-up",
+    title: "Follow-up",
+    summary: "email, SMS, repeat booking, CRM updates",
+    badges: ["setup: automation", "monthly: messaging"],
+    details: "After the visit, the system shifts into retention mode and tries to create the next booking.",
+    systems: ["Email", "SMS", "CRM", "Automation"],
+    subflow: [
+      { id: "thanks", label: "Thank-you sent", note: "Close the loop with a post-visit message." },
+      { id: "crm", label: "CRM updated", note: "Store activity and customer history." },
+      { id: "promo", label: "Promo / invite", note: "Encourage repeat bookings or upsells." },
+    ],
+  },
+];
 
 const topologyNodes: TopologyNode[] = [
   {
@@ -156,11 +255,35 @@ function MiniBadge({ children }: { children: React.ReactNode }) {
   return <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold text-cyan-300">{children}</span>;
 }
 
-function FlowNode({ title, copy, badges }: { title: string; copy: string; badges: string[] }) {
+function FlowNode({
+  title,
+  copy,
+  badges,
+  active,
+  onClick,
+}: {
+  title: string;
+  copy: string;
+  badges: string[];
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="grid min-h-[136px] gap-3 rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(22,32,51,0.88),rgba(16,24,39,0.94))] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.26)]">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`grid min-h-[136px] gap-3 rounded-3xl border p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.26)] transition ${
+        active
+          ? "border-cyan-300/60 bg-[linear-gradient(180deg,rgba(21,46,73,0.96),rgba(16,28,45,0.98))] ring-1 ring-cyan-300/30"
+          : "border-white/10 bg-[linear-gradient(180deg,rgba(22,32,51,0.88),rgba(16,24,39,0.94))] hover:border-cyan-300/40"
+      }`}
+      aria-pressed={active}
+    >
       <div>
-        <h3 className="text-base font-semibold">{title}</h3>
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="text-base font-semibold">{title}</h3>
+          <span className="text-lg font-bold text-cyan-300">{active ? "−" : "+"}</span>
+        </div>
         <p className="mt-2 text-sm leading-6 text-slate-300">{copy}</p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -168,6 +291,42 @@ function FlowNode({ title, copy, badges }: { title: string; copy: string; badges
           <MiniBadge key={badge}>{badge}</MiniBadge>
         ))}
       </div>
+    </button>
+  );
+}
+
+function ExpandedSubflow({ node }: { node: UserFlowNode }) {
+  return (
+    <div className="rounded-[28px] border border-cyan-300/20 bg-[linear-gradient(180deg,rgba(8,15,28,0.92),rgba(11,18,32,0.98))] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.3)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300">Expanded step</p>
+          <h3 className="mt-3 text-2xl font-semibold">{node.title}</h3>
+          <p className="mt-3 text-sm leading-7 text-slate-300">{node.details}</p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
+          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Systems involved</div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {node.systems.map((system) => (
+              <span key={system} className="rounded-full border border-white/10 px-3 py-1 text-xs">
+                {system}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(5,minmax(0,1fr))]">
+        {node.subflow.map((step, index) => (
+          <div key={step.id} className="relative rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">{String(index + 1).padStart(2, "0")}</div>
+            <h4 className="mt-3 text-sm font-semibold text-white">{step.label}</h4>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{step.note}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-5 text-sm text-slate-400">This expands the selected step without replacing the top-level journey, so the main story stays visible.</p>
     </div>
   );
 }
@@ -225,6 +384,13 @@ function TopologyMap() {
 }
 
 export default function MarvenBaseballSimPage() {
+  const [activeFlowId, setActiveFlowId] = useState(userFlowNodes[1]?.id ?? userFlowNodes[0]?.id);
+
+  const activeFlowNode = useMemo(
+    () => userFlowNodes.find((node) => node.id === activeFlowId) ?? userFlowNodes[0],
+    [activeFlowId],
+  );
+
   return (
     <main className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-20">
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -252,23 +418,44 @@ export default function MarvenBaseballSimPage() {
 
       <section className="mt-10">
         <SectionCard>
-          <h2 className="text-2xl font-semibold">1. User flow</h2>
-          <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
-            Same journey, different stack. This is the lifecycle the visitor experiences from first visit to repeat booking.
-          </p>
-          <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
-            <FlowNode title="Visitor Web App" copy="browser-based, usable anywhere" badges={["setup: low", "monthly: hosting"]} />
-            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
-            <FlowNode title="Booking Form" copy="captures the booking request" badges={["setup: 1-2 days", "monthly: form/tooling"]} />
-            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
-            <FlowNode title="Payment" copy="checkout and confirmation" badges={["setup: 1-2 days", "monthly: processor fees"]} />
-            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
-            <FlowNode title="Access" copy="unlocks Kisi, lights, or entry controls" badges={["setup: hardware", "monthly: access SaaS"]} />
-            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
-            <FlowNode title="Session" copy="staff and calendar coordination" badges={["setup: ops", "monthly: calendar/tools"]} />
-            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
-            <FlowNode title="Follow-up" copy="email, SMS, repeat booking, CRM updates" badges={["setup: automation", "monthly: messaging"]} />
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold">1. User flow</h2>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
+                Same journey, different stack. Click any stage to expand the subflow without losing the overall lifecycle.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 text-xs text-slate-400">
+              <span className="rounded-full border border-white/10 px-3 py-1">click = expand subflow</span>
+              <span className="rounded-full border border-white/10 px-3 py-1">one step open at a time</span>
+              <span className="rounded-full border border-white/10 px-3 py-1">main journey stays visible</span>
+            </div>
           </div>
+
+          <div className="mt-8 grid gap-4 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
+            {userFlowNodes.map((node, index) => (
+              <>
+                <FlowNode
+                  key={node.id}
+                  title={node.title}
+                  copy={node.summary}
+                  badges={node.badges}
+                  active={node.id === activeFlowId}
+                  onClick={() => setActiveFlowId((current) => (current === node.id ? node.id : node.id))}
+                />
+                {index < userFlowNodes.length - 1 ? (
+                  <div key={`${node.id}-arrow`} className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 xl:flex">
+                    →
+                  </div>
+                ) : null}
+              </>
+            ))}
+          </div>
+
+          <div className="mt-6">
+            <ExpandedSubflow node={activeFlowNode} />
+          </div>
+
           <p className="mt-5 text-sm text-slate-400">↺ Follow-up loops back to Visitor Web App / Booking Form for repeat bookings and re-engagement.</p>
         </SectionCard>
       </section>
