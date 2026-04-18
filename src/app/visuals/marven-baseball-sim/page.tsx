@@ -1,68 +1,223 @@
 "use client";
 
-type NodeConfig = {
+type TopologyNode = {
   key: string;
   label: string;
-  left: string;
-  top: string;
-  border: string;
+  x: number;
+  y: number;
+  type: string;
+  monthly: string;
+  setup: string;
+  time: string;
+  summary: string;
+  connections: string[];
 };
 
-type EdgeConfig = {
-  d: string;
-  color: string;
-};
+const topologyNodes: TopologyNode[] = [
+  {
+    key: "booking-ui",
+    label: "Booking UI",
+    x: 42,
+    y: 48,
+    type: "custom built",
+    monthly: "$20-$100 / mo",
+    setup: "$500-$1.5k",
+    time: "2-4 days",
+    summary: "Captures booking and starts the whole flow.",
+    connections: ["Backend/API", "Payment processor"],
+  },
+  {
+    key: "backend",
+    label: "Backend / API",
+    x: 58,
+    y: 48,
+    type: "custom built",
+    monthly: "$20-$150 / mo",
+    setup: "$1k-$3k",
+    time: "3-6 days",
+    summary: "Central logic for booking state, access timing, and orchestration.",
+    connections: ["Database", "Email", "SMS", "n8n / Zapier", "Kisi"],
+  },
+  {
+    key: "database",
+    label: "Database",
+    x: 50,
+    y: 13,
+    type: "subscription",
+    monthly: "$0-$50 / mo",
+    setup: "$100-$400",
+    time: "0.5-1 day",
+    summary: "Stores bookings, users, and system records.",
+    connections: ["Backend / API"],
+  },
+  {
+    key: "payment",
+    label: "Payment processor",
+    x: 21,
+    y: 18,
+    type: "subscription",
+    monthly: "fees per transaction",
+    setup: "$100-$300",
+    time: "0.5-1 day",
+    summary: "Handles checkout, receipts, and payment confirmation.",
+    connections: ["Booking UI", "Backend / API"],
+  },
+  {
+    key: "email",
+    label: "Email",
+    x: 16,
+    y: 46,
+    type: "subscription",
+    monthly: "$10-$50 / mo",
+    setup: "$100-$300",
+    time: "0.5-1 day",
+    summary: "Confirmation, reminders, and follow-up communication.",
+    connections: ["Backend / API", "CRM / records"],
+  },
+  {
+    key: "sms",
+    label: "SMS",
+    x: 18,
+    y: 80,
+    type: "subscription",
+    monthly: "$20+ usage",
+    setup: "$100-$300",
+    time: "0.5-1 day",
+    summary: "Fast reminders and follow-up texts.",
+    connections: ["Backend / API", "CRM / records"],
+  },
+  {
+    key: "automation",
+    label: "n8n / Zapier",
+    x: 83,
+    y: 18,
+    type: "subscription",
+    monthly: "$20-$100 / mo",
+    setup: "$300-$900",
+    time: "1-2 days",
+    summary: "Bridges systems, updates records, and reduces manual ops.",
+    connections: ["Backend / API", "CRM / records", "Email", "SMS"],
+  },
+  {
+    key: "kisi",
+    label: "Kisi",
+    x: 86,
+    y: 45,
+    type: "subscription",
+    monthly: "$$ / mo",
+    setup: "$500-$2k",
+    time: "1-3 days",
+    summary: "Access control that ties booking state to entry permissions.",
+    connections: ["Backend / API", "Door / lights"],
+  },
+  {
+    key: "door",
+    label: "Door / lights",
+    x: 84,
+    y: 79,
+    type: "mixed hardware",
+    monthly: "$0-$50 / mo",
+    setup: "$1k-$4k",
+    time: "2-5 days",
+    summary: "Physical controls that make the visit feel automated.",
+    connections: ["Kisi"],
+  },
+  {
+    key: "crm",
+    label: "CRM / records",
+    x: 50,
+    y: 88,
+    type: "subscription",
+    monthly: "$0-$100 / mo",
+    setup: "$200-$600",
+    time: "1-2 days",
+    summary: "Tracks customers, history, and repeat engagement.",
+    connections: ["Email", "SMS", "n8n / Zapier"],
+  },
+  {
+    key: "hosting",
+    label: "Hosting / monitoring",
+    x: 50,
+    y: 68,
+    type: "subscription",
+    monthly: "$20-$80 / mo",
+    setup: "$100-$400",
+    time: "0.5-1 day",
+    summary: "Keeps the app live and gives visibility when things break.",
+    connections: ["Backend / API", "Booking UI"],
+  },
+];
 
 function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`rounded-[28px] border border-white/10 bg-white/5 p-6 ${className}`}>{children}</div>;
 }
 
-function InteractiveMap({
-  initialTitle,
-  initialCopy,
-  nodes,
-  edges,
-  content,
-}: {
-  initialTitle: string;
-  initialCopy: string;
-  nodes: NodeConfig[];
-  edges: EdgeConfig[];
-  content: Record<string, [string, string]>;
-}) {
+function MiniBadge({ children }: { children: React.ReactNode }) {
+  return <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold text-cyan-300">{children}</span>;
+}
+
+function FlowNode({ title, copy, badges }: { title: string; copy: string; badges: string[] }) {
   return (
-    <div className="relative h-[460px] overflow-hidden rounded-[18px] border border-white/8 bg-[linear-gradient(180deg,rgba(19,34,56,0.35),rgba(16,24,39,0.15))] md:h-[520px]">
-      <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {edges.map((edge, index) => (
-          <path key={index} d={edge.d} stroke={edge.color} strokeWidth="0.7" fill="none" opacity="0.75" />
+    <div className="grid min-h-[136px] gap-3 rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(22,32,51,0.88),rgba(16,24,39,0.94))] p-4 shadow-[0_18px_40px_rgba(0,0,0,0.26)]">
+      <div>
+        <h3 className="text-base font-semibold">{title}</h3>
+        <p className="mt-2 text-sm leading-6 text-slate-300">{copy}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {badges.map((badge) => (
+          <MiniBadge key={badge}>{badge}</MiniBadge>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function TopologyMap() {
+  return (
+    <div className="relative min-h-[760px] overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_20%_10%,rgba(125,211,252,0.08),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(167,139,250,0.08),transparent_25%),linear-gradient(180deg,rgba(9,16,30,0.98),rgba(11,16,32,0.98))] shadow-[0_18px_50px_rgba(0,0,0,0.32)] lg:min-h-[820px]">
+      <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <g stroke="rgba(125,211,252,0.32)" strokeWidth="0.28" fill="none">
+          <path d="M42 48 C 38 35, 30 24, 21 18" />
+          <path d="M42 48 C 34 49, 25 48, 16 46" />
+          <path d="M42 48 C 35 63, 26 73, 18 80" />
+          <path d="M58 48 C 66 33, 75 24, 83 18" />
+          <path d="M58 48 C 67 48, 76 47, 86 45" />
+          <path d="M58 48 C 66 62, 75 72, 84 79" />
+          <path d="M50 54 C 50 66, 50 77, 50 88" />
+          <path d="M50 42 C 50 31, 50 23, 50 13" />
+        </g>
       </svg>
 
-      <div className="absolute right-3 top-3 z-20 w-[250px] rounded-2xl border border-white/8 bg-slate-950/80 p-4 backdrop-blur md:w-[240px]">
-        <h4 className="mb-2 text-base font-semibold" id="marven-title">{initialTitle}</h4>
-        <p className="text-sm leading-6 text-slate-300" id="marven-copy">{initialCopy}</p>
+      <div className="absolute right-4 top-4 z-20 w-[290px] rounded-3xl border border-white/10 bg-slate-950/85 p-4 backdrop-blur lg:w-[300px]">
+        <h3 className="text-lg font-semibold">Node details</h3>
+        <p className="mt-2 text-sm leading-6 text-slate-300">Hover or click a node for what it does, what it connects to, monthly cost, setup cost, and setup time.</p>
+        <div className="mt-4 grid gap-2 text-sm text-slate-400">
+          <span>custom built vs subscription</span>
+          <span>monthly cost</span>
+          <span>setup cost</span>
+          <span>estimated setup time</span>
+        </div>
       </div>
 
-      {nodes.map((node) => (
+      {topologyNodes.map((node) => (
         <button
           key={node.key}
           type="button"
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-[#132238] px-3 py-2 text-sm font-bold whitespace-nowrap text-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition hover:scale-[1.02]"
-          style={{ left: node.left, top: node.top, borderColor: node.border }}
-          onClick={(event) => {
-            const root = event.currentTarget.parentElement;
-            if (!root) return;
-            root.querySelectorAll("[data-marven-node]").forEach((el) => el.classList.remove("ring-2", "ring-cyan-300/30"));
-            event.currentTarget.classList.add("ring-2", "ring-cyan-300/30");
-            const next = content[node.key];
-            const title = root.querySelector("#marven-title");
-            const copy = root.querySelector("#marven-copy");
-            if (title) title.textContent = next[0];
-            if (copy) copy.textContent = next[1];
-          }}
-          data-marven-node
+          title={`${node.label}: ${node.summary}`}
+          className="group absolute z-10 w-[180px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(22,32,51,0.88),rgba(16,24,39,0.94))] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.3)] transition hover:border-cyan-300/40"
+          style={{ left: `${node.x}%`, top: `${node.y}%` }}
         >
-          {node.label}
+          <h3 className="text-sm font-semibold">{node.label}</h3>
+          <p className="mt-1 text-xs text-slate-400">{node.type}</p>
+          <div className="mt-3 grid gap-1 text-[11px] text-slate-300">
+            <span>{node.monthly}</span>
+            <span>{node.setup}</span>
+            <span>{node.time}</span>
+          </div>
+          <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-3 hidden w-[240px] -translate-x-1/2 rounded-2xl border border-white/10 bg-slate-950/95 p-3 text-xs shadow-[0_18px_40px_rgba(0,0,0,0.35)] group-hover:block lg:w-[260px]">
+            <p className="leading-5 text-slate-200">{node.summary}</p>
+            <p className="mt-2 leading-5 text-slate-400">connects to: {node.connections.join(", ")}</p>
+          </div>
         </button>
       ))}
     </div>
@@ -74,145 +229,64 @@ export default function MarvenBaseballSimPage() {
     <main className="mx-auto max-w-7xl px-6 py-16 md:px-10 md:py-20">
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <SectionCard>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">Meeting board for Marven</p>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            What is actually behind a simple-looking baseball simulator business
-          </h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">Two-step explainer</p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">Baseball sim workflow, first the journey, then the stack</h1>
           <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-300">
-            This page is meant to support a real conversation. The point is that the customer-facing experience may look simple, but the business still depends on several connected systems, ongoing costs, and decisions about what should be bought versus what should be set up well.
+            This page is built to be at-a-glance first. Diagram one explains the visitor journey. Diagram two explains the implementation and where cost, setup time, and ownership start to spread across the stack.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            <a href="#system-map" className="rounded-full border border-white/12 px-4 py-2 text-slate-100 hover:border-cyan-300 hover:text-cyan-300">System map</a>
-            <a href="#cost-view" className="rounded-full border border-white/12 px-4 py-2 text-slate-100 hover:border-cyan-300 hover:text-cyan-300">Cost view</a>
-            <a href="#my-role" className="rounded-full border border-white/12 px-4 py-2 text-slate-100 hover:border-cyan-300 hover:text-cyan-300">My role</a>
-          </div>
-        </SectionCard>
-
-        <div className="grid gap-4">
-          <SectionCard>
-            <strong className="block text-sm text-slate-400">Main takeaway</strong>
-            <span className="mt-2 block text-2xl font-extrabold leading-tight">Simple for customers, not simple behind the scenes</span>
-          </SectionCard>
-          <SectionCard>
-            <strong className="block text-sm text-slate-400">Main questions</strong>
-            <span className="mt-2 block text-2xl font-extrabold leading-tight">How much should this cost, and where can I help?</span>
-          </SectionCard>
-        </div>
-      </section>
-
-      <section id="system-map" className="mt-10">
-        <SectionCard>
-          <h2 className="text-2xl font-semibold">System map</h2>
-          <p className="mt-2 text-sm text-slate-400">Click around the map. This is the main visual helper for the conversation.</p>
-          <div className="mt-6">
-            <InteractiveMap
-              initialTitle="Customer experience"
-              initialCopy="The customer mostly sees booking, payment, and entry. The complexity sits behind that."
-              nodes={[
-                { key: "customer", label: "Customer", left: "10%", top: "50%", border: "rgba(125,211,252,0.35)" },
-                { key: "booking", label: "Booking", left: "26%", top: "24%", border: "rgba(125,211,252,0.35)" },
-                { key: "payment", label: "Payment", left: "26%", top: "50%", border: "rgba(125,211,252,0.35)" },
-                { key: "website", label: "Website", left: "26%", top: "76%", border: "rgba(125,211,252,0.35)" },
-                { key: "rules", label: "Access Rules", left: "48%", top: "20%", border: "rgba(134,239,172,0.35)" },
-                { key: "ops", label: "Ops", left: "48%", top: "50%", border: "rgba(134,239,172,0.35)" },
-                { key: "support", label: "Support", left: "48%", top: "80%", border: "rgba(134,239,172,0.35)" },
-                { key: "locks", label: "Locks", left: "70%", top: "24%", border: "rgba(167,139,250,0.35)" },
-                { key: "facility", label: "Facility", left: "70%", top: "50%", border: "rgba(167,139,250,0.35)" },
-                { key: "vendors", label: "Vendors", left: "70%", top: "76%", border: "rgba(167,139,250,0.35)" },
-                { key: "budget", label: "Budget", left: "92%", top: "34%", border: "rgba(253,186,116,0.35)" },
-                { key: "decision", label: "Decision", left: "92%", top: "66%", border: "rgba(253,186,116,0.35)" },
-              ]}
-              edges={[
-                { d: "M10 50 C 16 38, 20 28, 26 24", color: "#7dd3fc" },
-                { d: "M10 50 C 17 50, 20 50, 26 50", color: "#7dd3fc" },
-                { d: "M10 50 C 16 62, 20 72, 26 76", color: "#7dd3fc" },
-                { d: "M30 24 C 36 22, 42 20, 48 20", color: "#86efac" },
-                { d: "M30 50 C 36 48, 42 50, 48 50", color: "#86efac" },
-                { d: "M30 76 C 36 78, 42 80, 48 80", color: "#86efac" },
-                { d: "M52 20 C 58 22, 64 24, 70 24", color: "#a78bfa" },
-                { d: "M52 50 C 58 50, 64 50, 70 50", color: "#a78bfa" },
-                { d: "M52 80 C 58 78, 64 76, 70 76", color: "#a78bfa" },
-                { d: "M74 24 C 82 28, 86 31, 92 34", color: "#fdba74" },
-                { d: "M74 50 C 82 54, 86 60, 92 66", color: "#fdba74" },
-                { d: "M74 76 C 82 70, 86 68, 92 66", color: "#fdba74" },
-              ]}
-              content={{
-                customer: ["Customer experience", "The customer mostly sees booking, payment, and entry. The complexity sits behind that."],
-                booking: ["Booking", "A booking tool may be useful, but it is only one part of the overall system."],
-                payment: ["Payment", "Payments add rules, timing, and integration work."],
-                website: ["Website", "The site is the front door, not the whole building."],
-                rules: ["Access rules", "Someone still has to define the logic that connects bookings to real access."],
-                ops: ["Operations", "Operations is where the business has to work reliably day to day."],
-                support: ["Support", "If something fails, the support burden becomes very real very quickly."],
-                locks: ["Locks", "Access hardware is where software meets the physical world."],
-                facility: ["Facility", "Lights, cameras, internet, and simulator behavior still need to work as a system."],
-                vendors: ["Vendors", "Some of this is likely better handled by third-party vendors or installers."],
-                budget: ["Budget", "The real budget is not just software. It includes setup, hardware, recurring tools, and support."],
-                decision: ["Decision", "The decision is not just which booking app to use. It is what stack makes this workable, and where I help."],
-              }}
-            />
-          </div>
-        </SectionCard>
-      </section>
-
-      <section id="cost-view" className="mt-10 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <SectionCard>
-          <h2 className="text-2xl font-semibold">Cost view</h2>
-          <div className="mt-6 flex h-[260px] items-end justify-between gap-4">
-            {[
-              ["Software setup", 50, "bg-cyan-300"],
-              ["Hardware/install", 80, "bg-violet-300"],
-              ["Monthly services", 60, "bg-emerald-300"],
-              ["Support burden", 40, "bg-amber-300"],
-            ].map(([label, value, color]) => (
-              <div key={label as string} className="flex flex-1 flex-col items-center gap-3">
-                <div className="text-sm text-slate-300">{value}%</div>
-                <div className="flex w-full items-end justify-center rounded-t-2xl bg-white/5" style={{ height: `${Number(value) * 2}px` }}>
-                  <div className={`w-full rounded-t-2xl ${color as string}`} style={{ height: `${Number(value) * 2}px` }} />
-                </div>
-                <div className="text-center text-sm text-slate-300">{label}</div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-3 text-sm text-slate-400">This is a planning view, not a vendor quote.</p>
         </SectionCard>
         <SectionCard>
-          <h2 className="text-2xl font-semibold">What the chart is saying</h2>
+          <h2 className="text-2xl font-semibold">What this page should do</h2>
           <div className="mt-5 grid gap-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><h3 className="font-semibold">Upfront</h3><p className="mt-2 text-sm leading-6 text-slate-300">Software setup, integration, hardware decisions, install work, and testing.</p></div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><h3 className="font-semibold">Ongoing</h3><p className="mt-2 text-sm leading-6 text-slate-300">Subscriptions, support, maintenance, replacements, and vendor changes.</p></div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4"><h3 className="font-semibold">Usually missed</h3><p className="mt-2 text-sm leading-6 text-slate-300">Support burden and physical-world complexity are easy to underestimate.</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <h3 className="font-semibold">Step 1</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Make the user journey understandable at a glance.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <h3 className="font-semibold">Step 2</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Make the implementation understandable without a wall of text.</p>
+            </div>
           </div>
         </SectionCard>
       </section>
 
-      <section id="my-role" className="mt-10 grid gap-6 md:grid-cols-3">
+      <section className="mt-10">
         <SectionCard>
-          <h2 className="text-2xl font-semibold">Buy</h2>
-          <ul className="mt-4 space-y-3 text-slate-300">
-            <li>Booking engine</li>
-            <li>Payments</li>
-            <li>Access platform</li>
-            <li>Email and reminders</li>
-          </ul>
+          <h2 className="text-2xl font-semibold">1. User flow</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
+            Same journey, different stack. This is the lifecycle the visitor experiences from first visit to repeat booking.
+          </p>
+          <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr]">
+            <FlowNode title="Visitor Web App" copy="browser-based, usable anywhere" badges={["setup: low", "monthly: hosting"]} />
+            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
+            <FlowNode title="Booking Form" copy="captures the booking request" badges={["setup: 1-2 days", "monthly: form/tooling"]} />
+            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
+            <FlowNode title="Payment" copy="checkout and confirmation" badges={["setup: 1-2 days", "monthly: processor fees"]} />
+            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
+            <FlowNode title="Access" copy="unlocks Kisi, lights, or entry controls" badges={["setup: hardware", "monthly: access SaaS"]} />
+            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
+            <FlowNode title="Session" copy="staff and calendar coordination" badges={["setup: ops", "monthly: calendar/tools"]} />
+            <div className="hidden items-center justify-center text-2xl font-extrabold text-cyan-300 lg:flex">→</div>
+            <FlowNode title="Follow-up" copy="email, SMS, repeat booking, CRM updates" badges={["setup: automation", "monthly: messaging"]} />
+          </div>
+          <p className="mt-5 text-sm text-slate-400">↺ Follow-up loops back to Visitor Web App / Booking Form for repeat bookings and re-engagement.</p>
         </SectionCard>
+      </section>
+
+      <section className="mt-10">
         <SectionCard>
-          <h2 className="text-2xl font-semibold">Where I help</h2>
-          <ul className="mt-4 space-y-3 text-slate-300">
-            <li>Choose the stack</li>
-            <li>Connect the systems</li>
-            <li>Set up workflow and logic</li>
-            <li>Reduce avoidable mistakes</li>
-          </ul>
-        </SectionCard>
-        <SectionCard>
-          <h2 className="text-2xl font-semibold">Needs validation</h2>
-          <ul className="mt-4 space-y-3 text-slate-300">
-            <li>Lock and hardware fit</li>
-            <li>Installer requirements</li>
-            <li>Actual vendor pricing</li>
-            <li>Support burden after launch</li>
-          </ul>
+          <h2 className="text-2xl font-semibold">2. System topology</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
+            Booking and backend stay central. Related services scatter around them so the architecture feels understandable without becoming a strict linear diagram.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-400">
+            <span className="rounded-full border border-white/10 px-3 py-1">hover = quick summary</span>
+            <span className="rounded-full border border-white/10 px-3 py-1">click not required for core meaning</span>
+            <span className="rounded-full border border-white/10 px-3 py-1">shows what is owned vs subscribed</span>
+          </div>
+          <div className="mt-6">
+            <TopologyMap />
+          </div>
         </SectionCard>
       </section>
     </main>
