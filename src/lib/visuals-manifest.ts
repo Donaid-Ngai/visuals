@@ -34,6 +34,41 @@ export const visualEntries: VisualEntry[] = [
     docs: [],
   },
   {
+    slug: "condo-board-communication-system",
+    title: "Condo Board Communication System",
+    href: "/visuals/condo-board-communication-system",
+    navLabel: "Condo Board",
+    pill: "Board workflow explainer",
+    category: "business explainer",
+    status: "flagship",
+    description:
+      "Shows the old manual condo board request flow against the new logged system, with a connected architecture view and explicit operating costs.",
+    accent: "cyan.300",
+    icon: "network",
+    docs: [
+      {
+        title: "README",
+        path: "docs/visuals/condo-board-communication-system/README.md",
+        kind: "overview",
+      },
+      {
+        title: "Context and intent",
+        path: "docs/visuals/condo-board-communication-system/context-and-intent.md",
+        kind: "context",
+      },
+      {
+        title: "Data spec",
+        path: "docs/visuals/condo-board-communication-system/data-spec.md",
+        kind: "spec",
+      },
+      {
+        title: "Implementation notes",
+        path: "docs/visuals/condo-board-communication-system/implementation-notes.md",
+        kind: "implementation",
+      },
+    ],
+  },
+  {
     slug: "marven-baseball-sim",
     title: "Marven Baseball Simulator",
     href: "/visuals/marven-baseball-sim",
