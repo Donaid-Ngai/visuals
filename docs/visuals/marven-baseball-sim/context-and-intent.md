@@ -36,11 +36,13 @@ This simplicity is important because it represents the user-facing promise.
 The system topology should reveal that many systems sit behind that seemingly simple journey.
 
 That is a core message of the page.
-The viewer should understand that operational simplicity for the customer often requires backend complexity.
+The viewer should understand that operational simplicity for the customer often requires backend complexity, especially at the booking-to-venue handoff where trusted payment state has to become real-world access and room readiness.
 
 ### 3. Ownership is mixed
 Some parts should be custom-built.
 Some parts should be bought as services.
+
+The page should frame this as a build-vs-buy decision, not as if one platform magically handles the whole business.
 
 The visual should help a viewer understand where custom software makes sense and where SaaS or external tooling is more practical.
 
@@ -93,27 +95,28 @@ For example:
 The expandable subflows expose those hidden mini-sequences.
 This helps the viewer understand what each step actually means without turning the top row into clutter.
 
-## Why the topology is floating instead of linear
-The topology should not look like a pipeline.
-It is a network.
+## Why the topology is a connected system map
+The topology should still read as a network, because the relationships between subsystems are part of the point.
 
-A floating network layout communicates these things better:
-- central systems versus satellites
-- clusters of related responsibilities
-- shared dependencies
-- non-linear system relationships
+The viewer should be able to see, at a glance:
+- what the central systems are
+- what each subsystem connects to
+- which pieces are core versus supporting
+- where digital workflow turns into real-world venue control
 
-If the topology becomes too linear, it falsely suggests the system behaves like a simple chain.
-That weakens the explanation.
+The diagram should not become spaghetti, but it also should not hide the system relationships inside grouped cards.
+For this project, visible connections plus quick-glance subsystem cards communicate the architecture more directly.
 
 ## Communication priorities
 When making design choices, keep these priorities in order:
 
 1. clarity
 2. readable labels
-3. understandable grouping
+3. understandable relationships between subsystems
 4. enough metadata to support discussion
 5. visual polish
+
+The copy should stay concrete: what the customer does, what the operator has to trust, and where hidden scope enters the system.
 
 If there is a tradeoff between polish and comprehension, choose comprehension.
 

@@ -42,6 +42,7 @@ Each user flow step should support:
 - `summary`
 - `badges[]`
 - `details`
+- `hiddenWork`
 - `systems[]`
 - `subflow[]`
 
@@ -54,6 +55,7 @@ Suggested conceptual shape:
   summary: string,
   badges: string[],
   details: string,
+  hiddenWork: string,
   systems: string[],
   subflow: {
     id: string,
@@ -66,12 +68,12 @@ Suggested conceptual shape:
 ### User flow content
 
 #### 1. Visitor Web App
-- summary: `browser-based, usable anywhere`
+- summary: `The customer decides whether this sim is worth booking.`
 - badges:
   - `setup: low`
   - `monthly: hosting`
 - details:
-  - `The customer sees pricing, offer framing, and a clear call to book from any device.`
+  - `This stage has one job: explain the baseball sim clearly enough that a new visitor understands the offer, price range, and why they should book now instead of bouncing.`
 - systems:
   - `Next.js site`
   - `Hosting`
@@ -82,12 +84,12 @@ Suggested conceptual shape:
   3. `CTA click` - `Pushes the visitor into the actual booking path.`
 
 #### 2. Booking Form
-- summary: `captures the booking request`
+- summary: `The visitor picks a session, slot, and contact details.`
 - badges:
   - `setup: 1-2 days`
   - `monthly: form/tooling`
 - details:
-  - `This is the commitment point where the visitor chooses the format, time, and contact details.`
+  - `This is the commitment point. The customer should be able to choose the right package and an available time without needing staff to step in and fix the booking manually.`
 - systems:
   - `Booking UI`
   - `Calendar`
@@ -99,12 +101,12 @@ Suggested conceptual shape:
   4. `Submit request` - `Create the booking record and move to payment.`
 
 #### 3. Payment
-- summary: `checkout and confirmation`
+- summary: `Payment turns interest into a trusted, actionable booking.`
 - badges:
   - `setup: 1-2 days`
   - `monthly: processor fees`
 - details:
-  - `Payment confirms intent, captures revenue, and triggers the rest of the automated flow.`
+  - `Payment is the point where the business can finally trust the reservation. Once the charge clears, confirmations can go out and the venue can prepare for a real session instead of a maybe.`
 - systems:
   - `Stripe`
   - `Backend/API`
@@ -115,12 +117,12 @@ Suggested conceptual shape:
   3. `Confirmation sent` - `Receipt and next-step confirmation go out automatically.`
 
 #### 4. Access
-- summary: `unlocks Kisi, lights, or entry controls`
+- summary: `A paid booking unlocks the right door at the right time.`
 - badges:
   - `setup: hardware`
   - `monthly: access SaaS`
 - details:
-  - `The system turns a paid booking into real-world access and environmental control.`
+  - `This is the hardest handoff in the whole flow. Software has to move from booking data into physical access, temporary permissions, and a room that feels ready when the customer arrives.`
 - systems:
   - `Kisi`
   - `Door controls`
@@ -132,12 +134,12 @@ Suggested conceptual shape:
   3. `Door / lights enabled` - `Make the physical session ready for arrival.`
 
 #### 5. Session
-- summary: `staff and calendar coordination`
+- summary: `The customer just shows up, but ops still need to stay aligned.`
 - badges:
   - `setup: ops`
   - `monthly: calendar/tools`
 - details:
-  - `Once access is ready, the actual operating workflow kicks in for staff, timing, and customer experience.`
+  - `The promise of a self-serve baseball sim is that the customer can arrive and start hitting without friction. That only works if the operating window, support expectations, and venue readiness were handled earlier in the flow.`
 - systems:
   - `Calendar`
   - `Staff ops`
@@ -149,12 +151,12 @@ Suggested conceptual shape:
   4. `Sim session runs` - `The actual baseball sim experience happens.`
 
 #### 6. Follow-up
-- summary: `email, SMS, repeat booking, CRM updates`
+- summary: `One visit becomes CRM history and a reason to rebook.`
 - badges:
   - `setup: automation`
   - `monthly: messaging`
 - details:
-  - `After the visit, the system shifts into retention mode and tries to create the next booking.`
+  - `After the session, the business should not lose the customer. The visit should roll straight into CRM updates, thank-you messaging, and a prompt to book again.`
 - systems:
   - `Email`
   - `SMS`
@@ -169,7 +171,8 @@ Suggested conceptual shape:
 - the top-level rail should remain visible during expansion
 - one active node at a time is the default behavior
 - clicking a node should reveal its subflow
-- the expanded area should explain what that stage actually contains
+- the expanded area should explain both the customer-facing action and the hidden work inside that stage
+- the active stage should also inform the topology by highlighting the most relevant systems below
 - the loopback should remain secondary to the main left-to-right flow
 
 ---
@@ -180,14 +183,15 @@ Suggested conceptual shape:
 Each topology node should support:
 - `key`
 - `label`
-- `x`
-- `y`
-- `type`
+- `lane`
+- `kind`
 - `monthly`
 - `setup`
 - `time`
 - `summary`
 - `connections[]`
+- `stages[]`
+- `priority`
 
 Suggested conceptual shape:
 
@@ -195,177 +199,208 @@ Suggested conceptual shape:
 {
   key: string,
   label: string,
-  x: number,
-  y: number,
-  type: string,
+  lane: "customer" | "core" | "automation" | "venue" | "infrastructure",
+  kind: string,
   monthly: string,
   setup: string,
   time: string,
   summary: string,
-  connections: string[]
+  connections: string[],
+  stages: string[],
+  priority: "core" | "supporting"
 }
 ```
 
 ### Current topology nodes
 
-#### Booking UI
+#### Customer touchpoints lane
+
+##### Booking UI
 - key: `booking-ui`
-- x: `42`
-- y: `48`
-- type: `custom built`
+- lane: `customer`
+- kind: `custom built`
 - monthly: `$20-$100 / mo`
 - setup: `$500-$1.5k`
 - time: `2-4 days`
-- summary: `Captures booking and starts the whole flow.`
+- summary: `Captures the reservation request and starts the flow.`
+- stages:
+  - `Visitor Web App`
+  - `Booking Form`
 - connections:
-  - `Backend/API`
   - `Payment processor`
-
-#### Backend / API
-- key: `backend`
-- x: `58`
-- y: `48`
-- type: `custom built`
-- monthly: `$20-$150 / mo`
-- setup: `$1k-$3k`
-- time: `3-6 days`
-- summary: `Central logic for booking state, access timing, and orchestration.`
-- connections:
-  - `Database`
-  - `Email`
-  - `SMS`
-  - `n8n / Zapier`
-  - `Kisi`
-
-#### Database
-- key: `database`
-- x: `50`
-- y: `13`
-- type: `subscription`
-- monthly: `$0-$50 / mo`
-- setup: `$100-$400`
-- time: `0.5-1 day`
-- summary: `Stores bookings, users, and system records.`
-- connections:
   - `Backend / API`
 
-#### Payment processor
+##### Payment processor
 - key: `payment`
-- x: `21`
-- y: `18`
-- type: `subscription`
+- lane: `customer`
+- kind: `subscription`
 - monthly: `fees per transaction`
 - setup: `$100-$300`
 - time: `0.5-1 day`
-- summary: `Handles checkout, receipts, and payment confirmation.`
+- summary: `Handles checkout and confirms payment state.`
+- stages:
+  - `Payment`
 - connections:
-  - `Booking UI`
   - `Backend / API`
+  - `Email`
 
-#### Email
-- key: `email`
-- x: `16`
-- y: `46`
-- type: `subscription`
-- monthly: `$10-$50 / mo`
-- setup: `$100-$300`
+#### Core platform lane
+
+##### Backend / API
+- key: `backend`
+- lane: `core`
+- kind: `custom built`
+- monthly: `$20-$150 / mo`
+- setup: `$1k-$3k`
+- time: `3-6 days`
+- summary: `Central logic for booking state, orchestration, and access timing.`
+- stages:
+  - `Booking Form`
+  - `Payment`
+  - `Access`
+  - `Session`
+- connections:
+  - `Database`
+  - `n8n / Zapier`
+  - `Kisi`
+  - `Hosting / monitoring`
+  - `Email`
+  - `SMS`
+
+##### Database
+- key: `database`
+- lane: `core`
+- kind: `subscription`
+- monthly: `$0-$50 / mo`
+- setup: `$100-$400`
 - time: `0.5-1 day`
-- summary: `Confirmation, reminders, and follow-up communication.`
+- summary: `Stores bookings, users, and operating records.`
+- stages:
+  - `Booking Form`
+  - `Payment`
+  - `Follow-up`
 - connections:
   - `Backend / API`
   - `CRM / records`
 
-#### SMS
-- key: `sms`
-- x: `18`
-- y: `80`
-- type: `subscription`
-- monthly: `$20+ usage`
-- setup: `$100-$300`
-- time: `0.5-1 day`
-- summary: `Fast reminders and follow-up texts.`
-- connections:
-  - `Backend / API`
-  - `CRM / records`
+#### Messaging and business ops lane
 
-#### n8n / Zapier
+##### n8n / Zapier
 - key: `automation`
-- x: `83`
-- y: `18`
-- type: `subscription`
+- lane: `automation`
+- kind: `subscription`
 - monthly: `$20-$100 / mo`
 - setup: `$300-$900`
 - time: `1-2 days`
-- summary: `Bridges systems, updates records, and reduces manual ops.`
+- summary: `Fans booking events out into business actions and record updates.`
+- stages:
+  - `Payment`
+  - `Access`
+  - `Follow-up`
 - connections:
-  - `Backend / API`
-  - `CRM / records`
   - `Email`
   - `SMS`
-
-#### Kisi
-- key: `kisi`
-- x: `86`
-- y: `45`
-- type: `subscription`
-- monthly: `$$ / mo`
-- setup: `$500-$2k`
-- time: `1-3 days`
-- summary: `Access control that ties booking state to entry permissions.`
-- connections:
-  - `Backend / API`
-  - `Door / lights`
-
-#### Door / lights
-- key: `door`
-- x: `84`
-- y: `79`
-- type: `mixed hardware`
-- monthly: `$0-$50 / mo`
-- setup: `$1k-$4k`
-- time: `2-5 days`
-- summary: `Physical controls that make the visit feel automated.`
-- connections:
+  - `CRM / records`
   - `Kisi`
 
-#### CRM / records
+##### Email
+- key: `email`
+- lane: `automation`
+- kind: `subscription`
+- monthly: `$10-$50 / mo`
+- setup: `$100-$300`
+- time: `0.5-1 day`
+- summary: `Confirmation, reminders, and post-visit follow-up.`
+- stages:
+  - `Payment`
+  - `Follow-up`
+- connections:
+  - `CRM / records`
+
+##### SMS
+- key: `sms`
+- lane: `automation`
+- kind: `subscription`
+- monthly: `$20+ usage`
+- setup: `$100-$300`
+- time: `0.5-1 day`
+- summary: `Fast reminders and short operational messages.`
+- stages:
+  - `Access`
+  - `Follow-up`
+- connections:
+  - `CRM / records`
+
+##### CRM / records
 - key: `crm`
-- x: `50`
-- y: `88`
-- type: `subscription`
+- lane: `automation`
+- kind: `subscription`
 - monthly: `$0-$100 / mo`
 - setup: `$200-$600`
 - time: `1-2 days`
-- summary: `Tracks customers, history, and repeat engagement.`
+- summary: `Keeps customer history, repeat-booking context, and retention data.`
+- stages:
+  - `Follow-up`
 - connections:
-  - `Email`
-  - `SMS`
-  - `n8n / Zapier`
+  - none
 
-#### Hosting / monitoring
+#### Venue execution lane
+
+##### Kisi
+- key: `kisi`
+- lane: `venue`
+- kind: `subscription`
+- monthly: `$$ / mo`
+- setup: `$500-$2k`
+- time: `1-3 days`
+- summary: `Access control that turns valid booking state into entry permissions.`
+- stages:
+  - `Access`
+- connections:
+  - `Door / lights`
+
+##### Door / lights
+- key: `door`
+- lane: `venue`
+- kind: `mixed hardware`
+- monthly: `$0-$50 / mo`
+- setup: `$1k-$4k`
+- time: `2-5 days`
+- summary: `Physical controls that make the session feel prepared and automated.`
+- stages:
+  - `Access`
+  - `Session`
+- connections:
+  - none
+
+#### Infrastructure lane
+
+##### Hosting / monitoring
 - key: `hosting`
-- x: `50`
-- y: `68`
-- type: `subscription`
+- lane: `infrastructure`
+- kind: `subscription`
 - monthly: `$20-$80 / mo`
 - setup: `$100-$400`
 - time: `0.5-1 day`
-- summary: `Keeps the app live and gives visibility when things break.`
+- summary: `Keeps the application live and helps catch failures early.`
+- stages:
+  - `Visitor Web App`
+  - `Session`
 - connections:
-  - `Backend / API`
-  - `Booking UI`
+  - none
 
 ### Topology layout principles
-- Booking UI and Backend / API should feel central
-- satellites should cluster around them
+- the stack should appear as a connected system map, not only as grouped lists
+- Booking UI and Backend / API should read as the center of the operating graph
+- nearby systems should show visible relationships without turning into unreadable spaghetti
+- each subsystem card should keep monthly cost, setup, and setup time visible at a glance
 - labels must remain readable at rest
-- metadata should stay compact
-- the shape should feel like a system map, not a linear process
+- the active user-flow stage should highlight the most relevant nodes and connectors without hiding the rest of the system
 
 ---
 
 ## Copy guidance
-Use short, legible phrasing.
+Use short, legible phrasing that says something concrete about the baseball-sim business model.
 
 Examples:
 - `browser-based, usable anywhere`
@@ -375,7 +410,7 @@ Examples:
 - `staff and calendar coordination`
 - `email, SMS, repeat booking, CRM updates`
 
-Avoid long marketing copy inside nodes.
+Avoid long marketing copy inside nodes. Avoid vague strategy language that does not identify the actual operational handoff or system responsibility.
 
 ---
 

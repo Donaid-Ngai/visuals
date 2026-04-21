@@ -64,15 +64,18 @@ A future enhancement could place the expanded area more directly under the click
 That may feel more spatially connected, but it must not reduce readability on smaller screens.
 
 ## Topology implementation guidance
-The topology currently uses manually positioned nodes.
-That is acceptable while the diagram is relatively stable.
+The topology should preserve a connected system-diagram feel.
+Visible subsystem relationships are part of the communication value, so the page should keep a readable network map rather than only grouped lane cards.
 
-If the node count grows or layout changes frequently, a future implementation could use:
+That does not mean every possible edge should be shown.
+The requirement is a legible connected map with quick-glance subsystem metadata.
+
+If the page later needs richer interactivity, future implementations could still use:
 - React Flow
 - a custom layout system
 - or a light coordinate mapping abstraction
 
-However, the main requirement is still readability, not library sophistication.
+However, the main requirement is still readability plus visible system relationships, not library sophistication.
 
 ## Styling guidance
 The page should continue to feel:

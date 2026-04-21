@@ -81,13 +81,14 @@ It should answer:
 - where do costs and setup effort spread?
 
 ### How to read it
-This should read as a network with a center.
+This should read as a grouped system map.
 
 The viewer should notice first:
-- Booking UI
-- Backend / API
+- the primary orchestration path across the top
+- Backend / API and Database as the core platform
+- the lane grouping that separates touchpoints, orchestration, operations, venue systems, and infrastructure
 
-Then surrounding systems should reveal themselves as supporting systems.
+This keeps the stack understandable without pretending the whole business is one straight pipeline.
 
 ### Interaction model
 The topology should still be understandable without interaction.
@@ -95,9 +96,10 @@ The topology should still be understandable without interaction.
 Interaction is there to add extra context, not to reveal the only meaning.
 
 Expected behavior:
-- hover = quick summary
-- click or hover can reveal detail depending on implementation
-- each node should still show enough at rest to be understood
+- each node shows enough detail at rest to stand on its own
+- the active user-flow stage highlights the most relevant stack nodes
+- unrelated nodes can recede visually, but should remain readable
+- node-level metadata should support discussion without needing tooltips
 
 ### What node metadata should communicate
 Each node should help answer:

@@ -38,11 +38,12 @@ This project should help a viewer understand that:
 
 - the customer experience looks simple
 - the system behind it is more complex
+- the stack can be grouped into clear responsibility lanes
 - some parts are custom-built
 - some parts are better handled by subscriptions or existing services
 - cost, setup time, and responsibility spread across multiple systems
 
-The page should make that feel obvious without needing a long verbal explanation.
+The page should make that feel obvious without drifting into generic product-language. The viewer should come away understanding that a self-serve baseball sim is really a booking-to-access automation business with physical-world dependencies.
 
 ## The two-diagram rule
 This page should continue to follow this sequence:
