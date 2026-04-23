@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { Provider } from "@/components/ui/provider";
 import { navVisualEntries } from "@/lib/visuals-manifest";
+import "@xyflow/react/dist/style.css";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });

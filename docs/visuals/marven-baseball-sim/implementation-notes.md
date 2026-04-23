@@ -10,10 +10,14 @@ Current route:
 The page is currently implemented as a single client component.
 It contains:
 
-- page framing content
+- customer-facing page framing content that can be sent to Marven directly
 - a user flow section
-- a topology section
-- inline data arrays for user flow and topology nodes
+- Framer Motion transitions for expanded user-flow content and cost cards
+- a cost snapshot section for Marven-facing quick estimates
+- a richer connected Mermaid system-map section, rendered larger with horizontal scrolling because Mermaid is not pan/zoomable by default in this component
+- inline data arrays for user flow, topology nodes, and cost cards
+
+The topology uses Mermaid again because the connected system relationships matter for this page. The diagram should keep the richer metadata from the previous card layout: ownership type, monthly cost, setup cost, and setup time should be visible inside the subsystem nodes.
 
 This is acceptable for the current size, but it is not necessarily the final structure.
 
@@ -52,11 +56,13 @@ docs/
 ## User flow implementation guidance
 The user flow should continue to behave like this:
 
-- top-level nodes remain visible
+- top-level nodes render as a connected journey rail rather than a plain card grid
+- arrow connectors make the left-to-right sequence obvious
 - selected node is highlighted
 - only one expanded step is shown by default
 - expanded content appears below the rail
-- the rail should still read left-to-right even when no one interacts with it
+- the rail should remain visible and readable even when a node is expanded
+- smaller screens may use horizontal scrolling to preserve flow continuity instead of wrapping nodes into unrelated rows
 
 ### Future enhancement option
 A future enhancement could place the expanded area more directly under the clicked node position instead of in one shared panel below the whole rail.

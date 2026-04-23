@@ -42,8 +42,20 @@ This project should help a viewer understand that:
 - some parts are custom-built
 - some parts are better handled by subscriptions or existing services
 - cost, setup time, and responsibility spread across multiple systems
+- Marven needs a fast read on the likely monthly run-rate, one-time setup envelope, physical access/setup cost, and the main risk area
 
-The page should make that feel obvious without drifting into generic product-language. The viewer should come away understanding that a self-serve baseball sim is really a booking-to-access automation business with physical-world dependencies.
+The page should make that feel obvious without drifting into generic product-language. The viewer should come away understanding that a self-serve baseball sim is really a booking-to-access automation business with physical-world dependencies, and that the highest-risk cost area is the handoff from paid booking state to reliable real-world access.
+
+## Copy stance
+This page is customer-facing. It should read like something Donald can send to Marven directly or walk through live.
+
+Use direct wording about the proposed business setup:
+- what customers experience
+- what systems need to be connected
+- what the rough cost shape looks like
+- where the implementation risk is
+
+Avoid meta wording like “this visual is trying to show” or “the viewer should understand” in the actual page copy.
 
 ## The two-diagram rule
 This page should continue to follow this sequence:

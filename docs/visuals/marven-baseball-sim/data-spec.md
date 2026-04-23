@@ -40,7 +40,7 @@ Each user flow step should support:
 - `id`
 - `title`
 - `summary`
-- `badges[]`
+- `systems[]` shown as visible chips in the expanded stage
 - `details`
 - `hiddenWork`
 - `systems[]`
@@ -168,16 +168,34 @@ Suggested conceptual shape:
   3. `Promo / invite` - `Encourage repeat bookings or upsells.`
 
 ### User flow interaction rules
-- the top-level rail should remain visible during expansion
+- the top-level user flow should render as a connected flow rail, not a plain card grid
+- top-level nodes should read left-to-right with visible arrow connectors between stages
+- on smaller screens, horizontal scrolling is acceptable if it preserves the flow relationship better than wrapping into unrelated cards
 - one active node at a time is the default behavior
-- clicking a node should reveal its subflow
+- clicking a node should reveal its subflow below the rail
 - the expanded area should explain both the customer-facing action and the hidden work inside that stage
-- the active stage should also inform the topology by highlighting the most relevant systems below
-- the loopback should remain secondary to the main left-to-right flow
+- the active stage should remain visually highlighted in the rail
+- the loopback should remain secondary to the main left-to-right flow and imply repeat booking / re-engagement
 
 ---
 
 ## System topology specification
+
+The topology section now has two layers:
+
+1. **Cost snapshot** — four quick-glance cards for the likely monthly run-rate, one-time software/setup, physical access/setup, and main risk area.
+2. **Connected Mermaid system map** — a grouped Mermaid diagram that keeps the visible subsystem relationships while embedding monthly cost, setup cost, setup time, and ownership type in each node.
+
+The map should be easier to interpret than the first basic Mermaid version, but it should still clearly show what connects to what. Do not replace this with disconnected lane cards unless the network becomes unreadable again.
+
+### Current quick-glance cost cards
+
+- likely monthly run-rate: `$90-$630+`
+- one-time software/setup: `$2.4k-$8.4k`
+- physical access/setup: `$1.5k-$6k`
+- real risk area: `access handoff`
+
+These are discussion ranges, not quotes. They are intended to help Marven understand cost shape and hidden scope quickly.
 
 ### Topology node schema
 Each topology node should support:

@@ -39,10 +39,13 @@ Then a loopback should imply repeat booking or re-entry to the flow.
 The user flow is interactive.
 
 Expected behavior:
+- the top-level journey should look like a connected rail, not six isolated cards
+- arrow connectors should make the forward sequence obvious
 - the top row remains visible at all times
-- clicking a node expands that step
+- clicking a node expands that step below the rail
 - the expanded area explains the subflow inside that step
 - only one step should be expanded at a time unless a future redesign has a very strong reason otherwise
+- mobile can use horizontal scrolling to preserve the sense of sequence
 
 ### Why this matters
 The user flow needs to serve two types of viewers:
@@ -85,7 +88,7 @@ This should read as a grouped system map.
 
 The viewer should notice first:
 - the primary orchestration path across the top
-- Backend / API and Database as the core platform
+- AllBooked records and Zapier workflow hub as the core operating layer
 - the lane grouping that separates touchpoints, orchestration, operations, venue systems, and infrastructure
 
 This keeps the stack understandable without pretending the whole business is one straight pipeline.
@@ -93,13 +96,14 @@ This keeps the stack understandable without pretending the whole business is one
 ### Interaction model
 The topology should still be understandable without interaction.
 
-Interaction is there to add extra context, not to reveal the only meaning.
+Interaction and motion are there to add scanning polish, not to reveal the only meaning.
 
 Expected behavior:
 - each node shows enough detail at rest to stand on its own
-- the active user-flow stage highlights the most relevant stack nodes
-- unrelated nodes can recede visually, but should remain readable
-- node-level metadata should support discussion without needing tooltips
+- cost snapshot cards appear before the detailed system map
+- the system map should be a connected Mermaid diagram with visible subsystem relationships
+- visible system chips should use plain tool names such as `AllBooked`, `Stripe`, `Zapier`, `Gmail / Outlook`, `Kisi / door codes`, and `SMS provider` instead of abstract implementation labels
+- motion should be subtle: small entrance transitions and expanded-state transitions only
 
 ### What node metadata should communicate
 Each node should help answer:
@@ -137,11 +141,11 @@ If time is short, focus on:
 These usually carry the clearest hidden complexity.
 
 ### In the topology
-- Booking UI
-- Backend / API
-- Kisi
-- CRM / records
-- Payment processor
+- AllBooked booking
+- Stripe
+- Zapier workflow hub
+- Kisi / door codes
+- Customer list / CRM
 
 These nodes best communicate the difference between the experience layer and the system layer.
 
