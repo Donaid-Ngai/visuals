@@ -2,6 +2,7 @@
 
 import {
   applyEdgeChanges,
+  applyNodeChanges,
   BaseEdge,
   Background,
   ConnectionMode,
@@ -798,29 +799,45 @@ export function ReactFlowSystemMap({
     };
   }, [defaultEdges, defaultGroupNodes, flowKey]);
 
-  const renderNodes = useMemo(() => buildRenderNodes(nodes, groups, groupNodes), [nodes, groups, groupNodes]);
+  const baseRenderNodes = useMemo(() => buildRenderNodes(nodes, groups, groupNodes), [nodes, groups, groupNodes]);
+  const [renderNodes, setRenderNodes] = useState<Node[]>(baseRenderNodes);
   const renderEdges = useMemo(() => buildRenderEdges(groupNodes, groups, groupEdges), [groupEdges, groupNodes, groups]);
+
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setRenderNodes(baseRenderNodes);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [baseRenderNodes]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     if (isLocked) return;
 
-    let hasPositionChange = false;
+    setRenderNodes((current) => applyNodeChanges(changes, current));
+
+    const completedPositions = new Map<string, { x: number; y: number }>();
+    for (const change of changes) {
+      if (change.type !== "position" || !change.position) continue;
+      if (change.dragging !== false) continue;
+      completedPositions.set(change.id, change.position);
+    }
+    if (completedPositions.size === 0) return;
+
     setGroupNodes((current) => {
       let changed = false;
       const next = current.map((node) => {
-        const positionChange = changes.find(
-          (change): change is Extract<NodeChange, { type: "position" }> =>
-            change.type === "position" && change.id === node.id && Boolean(change.position),
-        );
-        if (!positionChange?.position) return node;
+        const nextPosition = completedPositions.get(node.id);
+        if (!nextPosition) return node;
+        if (node.position.x === nextPosition.x && node.position.y === nextPosition.y) return node;
         changed = true;
-        hasPositionChange = true;
-        return { ...node, position: positionChange.position };
+        return { ...node, position: nextPosition };
       });
       return changed ? next : current;
     });
-
-    if (hasPositionChange) setDirty(true);
+    setDirty(true);
   }, [isLocked]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
