@@ -1,9 +1,12 @@
 import { Badge, Box, Container, SimpleGrid, Text } from "@chakra-ui/react";
-import { homeCardEntries } from "@/lib/visuals-manifest";
+import { homeCardEntries, visualEntries } from "@/lib/visuals-manifest";
 import { VisualCard } from "@/components/visuals/visual-card";
 import { SectionHeading } from "@/components/visuals/section-heading";
 
 export default function Home() {
+  const flagshipCount = homeCardEntries.filter((entry) => entry.status === "flagship").length;
+  const docCount = homeCardEntries.reduce((sum, entry) => sum + entry.docs.length, 0);
+
   return (
     <Container as="main" maxW="7xl" px={{ base: 5, md: 8 }} py={{ base: 14, md: 20 }}>
       <Box as="section" maxW="4xl">
@@ -37,7 +40,45 @@ export default function Home() {
         </Text>
       </Box>
 
-      <Box as="section" mt={{ base: 12, md: 16 }}>
+      <Box as="section" mt="12">
+        <SimpleGrid columns={{ base: 1, md: 3 }} gap="5">
+          <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
+            <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
+              Live routes
+            </Text>
+            <Text mt="2" fontSize="3xl" fontWeight="semibold">
+              {visualEntries.length}
+            </Text>
+            <Text mt="2" color="fg.muted" lineHeight="1.7">
+              The library is organized as reusable routes, not isolated mockups.
+            </Text>
+          </Box>
+          <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
+            <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
+              Flagship pages
+            </Text>
+            <Text mt="2" fontSize="3xl" fontWeight="semibold">
+              {flagshipCount}
+            </Text>
+            <Text mt="2" color="fg.muted" lineHeight="1.7">
+              These are the strongest story-led pages for the library.
+            </Text>
+          </Box>
+          <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
+            <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
+              Support docs
+            </Text>
+            <Text mt="2" fontSize="3xl" fontWeight="semibold">
+              {docCount}
+            </Text>
+            <Text mt="2" color="fg.muted" lineHeight="1.7">
+              The doc pattern keeps intent, data, and implementation notes easy to recover.
+            </Text>
+          </Box>
+        </SimpleGrid>
+      </Box>
+
+      <Box as="section" mt="12">
         <SectionHeading
           title="Available visuals"
           description="Start with a focused page, then keep adding to the library over time."

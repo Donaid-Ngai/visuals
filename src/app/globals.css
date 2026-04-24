@@ -16,10 +16,27 @@ body {
 }
 
 .react-flow__handle.connectable {
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  z-index: 10;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  pointer-events: all;
+}
+
+/* Expanded invisible hit target so handles are easy to grab */
+.react-flow__handle.connectable::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 999px;
 }
 
 .react-flow__handle.connectable:hover {
-  transform: translate(-50%, -50%) scale(1.35);
-  box-shadow: 0 0 16px rgba(125, 211, 252, 0.9);
+  background: rgba(186, 230, 253, 1);
+  box-shadow: 0 0 18px rgba(125, 211, 252, 0.95);
+}
+
+.react-flow__handle.connectable.connectingfrom,
+.react-flow__handle.connectable.connectingto,
+.react-flow__handle.connectable.valid {
+  background: rgba(52, 211, 153, 1);
+  box-shadow: 0 0 18px rgba(52, 211, 153, 0.95);
 }

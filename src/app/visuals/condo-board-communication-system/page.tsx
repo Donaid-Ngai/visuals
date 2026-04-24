@@ -19,11 +19,9 @@ import {
   ArrowRight,
   BellRing,
   CheckCircle2,
-  Clock3,
   MailCheck,
   MessageSquare,
   ShieldCheck,
-  Users,
 } from "lucide-react";
 import { PageHero } from "@/components/visuals/page-hero";
 import { SurfaceCard } from "@/components/visuals/surface-card";

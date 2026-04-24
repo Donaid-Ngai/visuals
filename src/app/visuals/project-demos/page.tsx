@@ -15,9 +15,14 @@ import {
   documentationHealth,
   documentationPattern,
   projectDemoEntries,
+  visualEntries,
 } from "@/lib/visuals-manifest";
 
 export default function ProjectDemosPage() {
+  const flagshipCount = projectDemoEntries.filter((entry) => entry.status === "flagship").length;
+  const totalDocs = projectDemoEntries.reduce((sum, entry) => sum + entry.docs.length, 0);
+  const liveCount = visualEntries.filter((entry) => entry.status === "live").length;
+
   return (
     <Container as="main" maxW="7xl" px={{ base: 5, md: 8 }} py={{ base: 14, md: 20 }}>
       <PageHero
@@ -28,12 +33,50 @@ export default function ProjectDemosPage() {
       />
 
       <Box mt="10">
+        <SimpleGrid columns={{ base: 1, md: 3 }} gap="5">
+          <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
+            <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
+              Routes in the library
+            </Text>
+            <Heading as="h2" mt="2" fontSize="3xl" fontWeight="semibold">
+              {visualEntries.length}
+            </Heading>
+            <Text mt="2" color="fg.muted" lineHeight="1.7">
+              Every route is meant to feel like a reusable asset, not a one-off page.
+            </Text>
+          </Box>
+          <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
+            <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
+              Flagship project pages
+            </Text>
+            <Heading as="h2" mt="2" fontSize="3xl" fontWeight="semibold">
+              {flagshipCount}
+            </Heading>
+            <Text mt="2" color="fg.muted" lineHeight="1.7">
+              The flagship pages carry the business-story visuals and the strongest communication structure.
+            </Text>
+          </Box>
+          <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
+            <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
+              Supporting docs linked
+            </Text>
+            <Heading as="h2" mt="2" fontSize="3xl" fontWeight="semibold">
+              {totalDocs}
+            </Heading>
+            <Text mt="2" color="fg.muted" lineHeight="1.7">
+              Route docs keep the intent, structure, and implementation notes recoverable for future edits.
+            </Text>
+          </Box>
+        </SimpleGrid>
+      </Box>
+
+      <Box mt="12">
         <SectionHeading
           title="Current project pages"
-          description="Each card is a live route in the library, with a quick read on documentation health."
+          description="Each card is a live route in the library, with a quick read on documentation health and how much supporting context it has."
           meta={
             <Text fontSize="xs" color="fg.faint" letterSpacing="0.18em" textTransform="uppercase">
-              {projectDemoEntries.length} project pages
+              {projectDemoEntries.length} project pages · {liveCount} live routes
             </Text>
           }
         />
