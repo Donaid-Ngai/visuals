@@ -104,9 +104,9 @@ function GroupNode({ data }: NodeProps<Node<FlowGroupData>>) {
     width: 12,
     height: 12,
     borderRadius: 999,
-    border: 0,
-    background: "transparent",
-    opacity: 0,
+    border: "1px solid rgba(148, 163, 184, 0.55)",
+    background: "rgba(125, 211, 252, 0.9)",
+    boxShadow: "0 0 10px rgba(125, 211, 252, 0.55)",
   } satisfies CSSProperties;
 
   return (
@@ -270,7 +270,6 @@ function buildRenderNodes(
   nodes: ReactFlowSystemMapNode[],
   groups: ReactFlowSystemMapGroup[],
   groupNodes: EditableGroupNode[],
-  isLocked: boolean,
 ): Node[] {
   const groupPositionIndex = new Map(groupNodes.map((group) => [group.id, group.position]));
   const nodeIndex = new Map(nodes.map((node) => [node.key, node]));
@@ -305,8 +304,6 @@ function buildRenderNodes(
         cards,
         columns,
       },
-      draggable: !isLocked,
-      selectable: !isLocked,
       zIndex: 0,
       style: {
         width: groupWidth,
@@ -434,12 +431,13 @@ export function ReactFlowSystemMap({
     };
   }, [defaultEdges, defaultGroupNodes, flowKey]);
 
-  const renderNodes = useMemo(() => buildRenderNodes(nodes, groups, groupNodes, isLocked), [nodes, groups, groupNodes, isLocked]);
+  const renderNodes = useMemo(() => buildRenderNodes(nodes, groups, groupNodes), [nodes, groups, groupNodes]);
   const renderEdges = useMemo(() => buildRenderEdges(groupNodes, groups, groupEdges), [groupEdges, groupNodes, groups]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     if (isLocked) return;
 
+    let hasPositionChange = false;
     setGroupNodes((current) => {
       let changed = false;
       const next = current.map((node) => {
@@ -449,11 +447,13 @@ export function ReactFlowSystemMap({
         );
         if (!positionChange?.position) return node;
         changed = true;
+        hasPositionChange = true;
         return { ...node, position: positionChange.position };
       });
-      if (changed) setDirty(true);
-      return next;
+      return changed ? next : current;
     });
+
+    if (hasPositionChange) setDirty(true);
   }, [isLocked]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
