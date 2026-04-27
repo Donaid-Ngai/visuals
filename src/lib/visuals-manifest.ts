@@ -122,6 +122,20 @@ export const visualEntries: VisualEntry[] = [
     icon: "folder-kanban",
     docs: [],
   },
+  {
+    slug: "timeline",
+    title: "Project Timeline",
+    href: "/visuals/timeline",
+    navLabel: "Timeline",
+    pill: "Project timeline",
+    category: "library",
+    status: "live",
+    description:
+      "A Directus-backed visual timeline of projects with start/end dates and hoverable feature markers.",
+    accent: "cyan.300",
+    icon: "sparkles",
+    docs: [],
+  },
 ];
 
 export const navVisualEntries = visualEntries.filter((entry) => entry.slug !== "project-demos");
