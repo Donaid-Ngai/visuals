@@ -13,6 +13,7 @@ export function FeatureMarker({
   active,
   onHover,
   onLeave,
+  onClick,
 }: {
   feature: TimelineFeature;
   leftPercent: number;
@@ -20,6 +21,7 @@ export function FeatureMarker({
   active: boolean;
   onHover: () => void;
   onLeave: () => void;
+  onClick?: () => void;
 }) {
   return (
     <MotionBox
@@ -27,8 +29,8 @@ export function FeatureMarker({
       top="50%"
       style={{ left: `${leftPercent}%` }}
       transform="translate(-50%, -50%) rotate(45deg)"
-      w={active ? "16px" : "12px"}
-      h={active ? "16px" : "12px"}
+      w={active ? "22px" : "18px"}
+      h={active ? "22px" : "18px"}
       bg={accent}
       borderWidth="2px"
       borderColor="rgba(6,10,22,0.95)"
@@ -41,6 +43,10 @@ export function FeatureMarker({
       onMouseLeave={onLeave}
       onFocus={onHover}
       onBlur={onLeave}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
       animate={{
         boxShadow: active
           ? `0 0 0 4px ${accent}33, 0 6px 18px ${accent}55`

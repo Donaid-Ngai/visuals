@@ -1,6 +1,7 @@
 export type TimelineFeature = {
   name: string;
   date: string;
+  brief?: string;
   notes?: string;
 };
 

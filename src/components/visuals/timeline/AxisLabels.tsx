@@ -34,11 +34,12 @@ export function AxisLabels({
             style={{ left: `${fraction * 100}%` }}
             transform="translateX(-50%)"
           >
-            <Box w="1px" h="6px" bg="rgba(255,255,255,0.18)" mx="auto" />
+            <Box w="1px" h="6px" bg="rgba(255,255,255,0.22)" mx="auto" />
             <Text
               mt="1.5"
-              fontSize="10px"
-              color="fg.faint"
+              fontSize="11px"
+              fontWeight="medium"
+              color="fg.muted"
               letterSpacing="0.08em"
               textTransform="uppercase"
               whiteSpace="nowrap"

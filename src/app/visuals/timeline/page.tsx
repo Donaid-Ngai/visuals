@@ -1,23 +1,12 @@
-import NextLink from "next/link";
-import {
-  Badge,
-  Box,
-  Container,
-  Link as ChakraLink,
-  SimpleGrid,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
-import { PageHero } from "@/components/visuals/page-hero";
-import { SectionHeading } from "@/components/visuals/section-heading";
+import { Box, Heading } from "@chakra-ui/react";
 import { TimelineCanvas } from "@/components/visuals/timeline/TimelineCanvas";
 import { fetchDirectusCollection } from "@/lib/directus";
-import {
-  daysBetween,
-  formatDate,
-  parseDate,
-} from "@/components/visuals/timeline/lib";
-import type { TimelineFeature, TimelineProject, TimelineProjectStatus } from "@/components/visuals/timeline/types";
+import { parseDate } from "@/components/visuals/timeline/lib";
+import type {
+  TimelineFeature,
+  TimelineProject,
+  TimelineProjectStatus,
+} from "@/components/visuals/timeline/types";
 
 type DirectusTimelineProject = {
   id?: string | number | null;
@@ -29,8 +18,17 @@ type DirectusTimelineProject = {
   status?: string | null;
   accent?: string | null;
   icon?: string | null;
-  features?: unknown;
   link?: string | null;
+  sort?: number | string | null;
+};
+
+type DirectusTimelineFeature = {
+  id?: string | number | null;
+  project?: string | number | null;
+  name?: string | null;
+  date?: string | null;
+  brief?: string | null;
+  notes?: string | null;
   sort?: number | string | null;
 };
 
@@ -54,10 +52,10 @@ const fallbackProjects: TimelineProject[] = [
     accent: "#38bdf8",
     icon: "sparkles",
     features: [
-      { name: "Initial scaffold", date: "2025-09-04", notes: "Next 16 + Chakra v3 set up, first card grid live." },
-      { name: "Condo board explainer", date: "2025-10-12", notes: "First flagship page shipped." },
-      { name: "Marven sim explainer", date: "2025-11-22", notes: "Tech ecosystem and cost breakdown." },
-      { name: "Timeline page", date: "2026-04-27", notes: "Directus-backed visual timeline (this page)." },
+      { name: "Initial scaffold", date: "2025-09-04", brief: "Next + Chakra", notes: "Next 16 + Chakra v3 set up." },
+      { name: "Condo board explainer", date: "2025-10-12", brief: "Condo flagship", notes: "First flagship page shipped." },
+      { name: "Marven sim explainer", date: "2025-11-22", brief: "Marven sim", notes: "Tech ecosystem and cost breakdown." },
+      { name: "Timeline page", date: "2026-04-27", brief: "Timeline live", notes: "Directus-backed visual timeline." },
     ],
     link: "/",
   },
@@ -65,18 +63,17 @@ const fallbackProjects: TimelineProject[] = [
     id: "fb-condo",
     name: "Condo Board Communication System",
     slug: "condo-board-communication-system",
-    description:
-      "Replaces scattered email threads with a logged, shared workflow for resident requests and board notices.",
+    description: "Logged shared workflow for resident requests and board notices.",
     startDate: "2025-08-10",
     endDate: "2025-12-15",
     status: "completed",
     accent: "#a78bfa",
     icon: "network",
     features: [
-      { name: "Discovery", date: "2025-08-20", notes: "Interviews with board members." },
-      { name: "Tracker prototype", date: "2025-09-25", notes: "First shared request tracker live." },
-      { name: "Resident portal", date: "2025-11-05", notes: "Owners can submit and view requests." },
-      { name: "Hand-off", date: "2025-12-15", notes: "Operating cost ~$25/mo documented." },
+      { name: "Discovery", date: "2025-08-20", brief: "Discovery" },
+      { name: "Tracker prototype", date: "2025-09-25", brief: "Tracker MVP" },
+      { name: "Resident portal", date: "2025-11-05", brief: "Resident portal" },
+      { name: "Hand-off", date: "2025-12-15", brief: "Handed off" },
     ],
     link: "/visuals/condo-board-communication-system",
   },
@@ -84,17 +81,16 @@ const fallbackProjects: TimelineProject[] = [
     id: "fb-marven",
     name: "Marven Baseball Simulator",
     slug: "marven-baseball-sim",
-    description:
-      "Business explainer for the Marven sim ecosystem — cost categories and DIY vs buy decisions.",
+    description: "Cost categories and DIY-vs-buy decisions for the Marven sim ecosystem.",
     startDate: "2025-10-01",
     endDate: null,
     status: "in_progress",
     accent: "#34d399",
     icon: "rocket",
     features: [
-      { name: "Tech map", date: "2025-10-18", notes: "Mapped the dependent services." },
-      { name: "Cost breakdown", date: "2025-11-30", notes: "Setup vs ongoing buckets defined." },
-      { name: "Deeper analysis pass", date: "2026-03-05", notes: "Refined the buy-vs-build framing." },
+      { name: "Tech map", date: "2025-10-18", brief: "Tech map" },
+      { name: "Cost breakdown", date: "2025-11-30", brief: "Cost model" },
+      { name: "Deeper analysis pass", date: "2026-03-05", brief: "Buy vs build" },
     ],
     link: "/visuals/marven-baseball-sim",
   },
@@ -102,17 +98,16 @@ const fallbackProjects: TimelineProject[] = [
     id: "fb-capabilities",
     name: "Capabilities Showcase",
     slug: "capabilities-showcase",
-    description:
-      "Live tour of the visual primitives now in the repo — diagrams, charts, motion, system mapping.",
+    description: "Live tour of the visual primitives in the repo.",
     startDate: "2025-09-15",
     endDate: "2025-10-20",
     status: "completed",
     accent: "#f472b6",
     icon: "sparkles",
     features: [
-      { name: "Mermaid demo", date: "2025-09-25", notes: "Diagram rendering smoke test." },
-      { name: "ReactFlow demo", date: "2025-10-08", notes: "System map prototype." },
-      { name: "Polish pass", date: "2025-10-20", notes: "Page reviewed and shipped." },
+      { name: "Mermaid demo", date: "2025-09-25", brief: "Mermaid" },
+      { name: "ReactFlow demo", date: "2025-10-08", brief: "ReactFlow" },
+      { name: "Polish pass", date: "2025-10-20", brief: "Polished" },
     ],
     link: "/visuals/capabilities-showcase",
   },
@@ -128,24 +123,22 @@ function coerceStatus(value: string | null | undefined): TimelineProjectStatus {
   return "planned";
 }
 
-function coerceFeatures(value: unknown): TimelineFeature[] {
-  if (!Array.isArray(value)) return [];
-  const result: TimelineFeature[] = [];
-  for (const entry of value) {
-    if (!entry || typeof entry !== "object") continue;
-    const record = entry as Record<string, unknown>;
-    const name = typeof record.name === "string" ? record.name.trim() : "";
-    const date = typeof record.date === "string" ? record.date.trim() : "";
-    if (!name || !date) continue;
-    const rawNotes = typeof record.notes === "string" ? record.notes.trim() : "";
-    const feature: TimelineFeature = { name, date };
-    if (rawNotes) feature.notes = rawNotes;
-    result.push(feature);
-  }
-  return result;
+function mapFeature(item: DirectusTimelineFeature): TimelineFeature | null {
+  const name = item.name?.trim();
+  const date = item.date?.trim();
+  if (!name || !date) return null;
+  const f: TimelineFeature = { name, date };
+  const brief = item.brief?.trim();
+  const notes = item.notes?.trim();
+  if (brief) f.brief = brief;
+  if (notes) f.notes = notes;
+  return f;
 }
 
-function mapProject(item: DirectusTimelineProject): TimelineProject | null {
+function mapProject(
+  item: DirectusTimelineProject,
+  features: TimelineFeature[],
+): TimelineProject | null {
   const name = item.name?.trim();
   const slug = item.slug?.trim() || (item.id != null ? String(item.id) : "");
   const startDate = item.start_date?.trim();
@@ -161,7 +154,7 @@ function mapProject(item: DirectusTimelineProject): TimelineProject | null {
     status: coerceStatus(item.status),
     accent: item.accent?.trim() || "#38bdf8",
     icon: item.icon?.trim() || undefined,
-    features: coerceFeatures(item.features),
+    features,
     link: item.link?.trim() || undefined,
   };
 }
@@ -174,146 +167,69 @@ function sortProjects(projects: TimelineProject[]): TimelineProject[] {
   });
 }
 
-async function getProjects(): Promise<{ projects: TimelineProject[]; source: "directus" | "fallback" }> {
-  const items = await fetchDirectusCollection<DirectusTimelineProject>("timeline_projects", {
-    fields: "*",
-    sort: "sort,start_date",
-  });
+async function getProjects(): Promise<TimelineProject[]> {
+  const [items, featureItems] = await Promise.all([
+    fetchDirectusCollection<DirectusTimelineProject>("timeline_projects", {
+      fields: "*",
+      sort: "sort,start_date",
+    }),
+    fetchDirectusCollection<DirectusTimelineFeature>("timeline_features", {
+      fields: "*",
+      sort: "project,sort,date",
+    }),
+  ]);
 
-  if (!items?.length) {
-    return { projects: sortProjects(fallbackProjects), source: "fallback" };
+  if (!items?.length) return sortProjects(fallbackProjects);
+
+  // Group features by project id
+  const featuresByProject = new Map<string, TimelineFeature[]>();
+  for (const f of featureItems ?? []) {
+    if (f.project == null) continue;
+    const key = String(f.project);
+    const mapped = mapFeature(f);
+    if (!mapped) continue;
+    const list = featuresByProject.get(key) ?? [];
+    list.push(mapped);
+    featuresByProject.set(key, list);
   }
 
   const mapped = items
-    .map(mapProject)
+    .map((item) => {
+      const projectId = item.id != null ? String(item.id) : "";
+      const features = featuresByProject.get(projectId) ?? [];
+      return mapProject(item, features);
+    })
     .filter((p): p is TimelineProject => p !== null);
 
-  if (!mapped.length) {
-    return { projects: sortProjects(fallbackProjects), source: "fallback" };
-  }
-
-  return { projects: sortProjects(mapped), source: "directus" };
+  return mapped.length ? sortProjects(mapped) : sortProjects(fallbackProjects);
 }
 
 export default async function TimelinePage() {
-  const { projects, source } = await getProjects();
-
-  const today = new Date();
-  const featureCount = projects.reduce((total, p) => total + p.features.length, 0);
-
-  const earliest = projects
-    .map((p) => parseDate(p.startDate))
-    .filter((d): d is Date => d !== null)
-    .reduce<Date | null>((min, d) => (!min || d < min ? d : min), null);
-
-  const latest = projects
-    .map((p) => (p.endDate ? parseDate(p.endDate) : today))
-    .filter((d): d is Date => d !== null)
-    .reduce<Date | null>((max, d) => (!max || d > max ? d : max), null);
-
-  const spanDays = earliest && latest ? Math.max(0, daysBetween(earliest, latest)) : 0;
-  const spanLabel = spanDays >= 730
-    ? `${(spanDays / 365).toFixed(1)} years`
-    : spanDays >= 60
-    ? `${Math.round(spanDays / 30)} months`
-    : `${spanDays} days`;
-
-  const ongoingCount = projects.filter((p) => !p.endDate).length;
+  const projects = await getProjects();
 
   return (
-    <Container as="main" maxW="7xl" px={{ base: 5, md: 8 }} py={{ base: 14, md: 20 }}>
-      <PageHero
-        eyebrow="Project timeline"
-        title="A visual timeline of what is being built and when"
-        description="Each line is a project, each bar shows its duration, and each diamond marker is a feature or milestone you can hover for the underlying note. Backed by a Directus collection so the data is editable without touching the code."
-      />
-
-      <Box mt="8">
-        <SimpleGrid columns={{ base: 1, md: 4 }} gap="5">
-          <StatCard label="Projects on the timeline" value={String(projects.length)} note={`${ongoingCount} still in flight`} />
-          <StatCard label="Time span covered" value={spanLabel} note={earliest && latest ? `${formatDate(earliest)} → ${formatDate(latest)}` : "—"} />
-          <StatCard label="Feature markers" value={String(featureCount)} note={`across ${projects.length} project${projects.length === 1 ? "" : "s"}`} />
-          <StatCard
-            label="Data source"
-            value={source === "directus" ? "Directus" : "In-code"}
-            note={source === "directus" ? "Live from timeline_projects" : "Falling back to bundled samples"}
-          />
-        </SimpleGrid>
-      </Box>
-
-      <Box mt="12">
-        <SectionHeading
-          title="Timeline view"
-          description="Hover anywhere on the chart — the right-hand pane updates with the relevant detail."
-          meta={
-            <Badge
-              rounded="pill"
-              px="3"
-              py="1"
-              fontSize="11px"
-              textTransform="uppercase"
-              letterSpacing="0.18em"
-              borderWidth="1px"
-              borderColor="border.accent"
-              bg="accent.muted"
-              color="cyan.300"
-            >
-              Live
-            </Badge>
-          }
-        />
-
+    <Box
+      as="main"
+      h={{ base: "calc(100dvh - 160px)", md: "calc(100dvh - 180px)" }}
+      px={{ base: 4, md: 8 }}
+      pt={{ base: 3, md: 4 }}
+      pb={{ base: 3, md: 4 }}
+      display="flex"
+      flexDirection="column"
+      gap={{ base: 2, md: 3 }}
+    >
+      <Heading
+        as="h1"
+        fontSize={{ base: "2xl", md: "4xl" }}
+        fontWeight="semibold"
+        letterSpacing="-0.02em"
+        flexShrink={0}
+      >
+        Timeline
+      </Heading>
+      <Box flex="1" minH="0" display="flex" flexDirection="column">
         <TimelineCanvas projects={projects} />
       </Box>
-
-      <Box mt="14">
-        <SectionHeading
-          title="Where the data comes from"
-          description="The page is wired to a Directus collection so projects and milestones can be added without touching the code."
-        />
-        <Stack gap="3" maxW="3xl">
-          <Text color="fg.muted" lineHeight="1.8">
-            Projects and their feature markers are pulled from the
-            {" "}
-            <Text as="code" fontFamily="mono" fontSize="sm" color="cyan.200">
-              timeline_projects
-            </Text>{" "}
-            Directus collection at request time. If Directus is unreachable or
-            empty, the page falls back to a small set of in-code projects so the
-            visual still renders.
-          </Text>
-          <Text color="fg.muted" lineHeight="1.8">
-            For the schema and a setup script, see the linked notes below.
-          </Text>
-          <Stack gap="2" mt="2">
-            <ChakraLink asChild color="cyan.300" _hover={{ color: "cyan.200" }}>
-              <NextLink href="/docs/visuals/timeline">Page notes (docs/visuals/timeline)</NextLink>
-            </ChakraLink>
-            <Text fontSize="sm" color="fg.faint">
-              Schema: <Text as="code" fontFamily="mono" fontSize="sm" color="fg.muted">directus/timeline_projects.schema.md</Text>
-            </Text>
-            <Text fontSize="sm" color="fg.faint">
-              Seed script: <Text as="code" fontFamily="mono" fontSize="sm" color="fg.muted">scripts/setup-timeline-directus.ts</Text>
-            </Text>
-          </Stack>
-        </Stack>
-      </Box>
-    </Container>
-  );
-}
-
-function StatCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <Box rounded="card" borderWidth="1px" borderColor="border" bg="bg.surface" p="6">
-      <Text fontSize="xs" color="fg.faint" textTransform="uppercase" letterSpacing="0.18em">
-        {label}
-      </Text>
-      <Text mt="2" fontSize="3xl" fontWeight="semibold">
-        {value}
-      </Text>
-      <Text mt="2" color="fg.muted" lineHeight="1.7" fontSize="sm">
-        {note}
-      </Text>
     </Box>
   );
 }
