@@ -32,12 +32,15 @@ function targetsEqual(a: DetailTarget | null, b: DetailTarget | null) {
 export function TimelineCanvas({ projects }: { projects: TimelineProject[] }) {
   const [hovered, setHovered] = useState<DetailTarget | null>(null);
   const [pinned, setPinned] = useState<DetailTarget | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const togglePin = (target: DetailTarget) => {
     setPinned((current) => (targetsEqual(current, target) ? null : target));
   };
 
   const activeTarget = pinned ?? hovered;
+  const timelineFlex = expanded ? "1 1 35%" : "1 1 70%";
+  const detailFlex = expanded ? "1 1 65%" : "1 1 30%";
 
   const today = useMemo(() => new Date(), []);
   const range = useMemo(() => computeRange(projects, today), [projects, today]);
@@ -59,7 +62,7 @@ export function TimelineCanvas({ projects }: { projects: TimelineProject[] }) {
         bg="bg.surface"
         px={{ base: 3, md: 5 }}
         py={{ base: 3, md: 4 }}
-        flex="1 1 70%"
+        flex={timelineFlex}
         minH="0"
         display="flex"
         flexDirection="column"
@@ -68,10 +71,12 @@ export function TimelineCanvas({ projects }: { projects: TimelineProject[] }) {
       >
         <Box
           overflowX={{ base: "auto", md: "hidden" }}
-          overflowY="hidden"
+          overflowY="auto"
+          flex="1"
+          minH="0"
           display="flex"
           flexDirection="column"
-          justifyContent="center"
+          justifyContent="flex-start"
         >
           <Box minW={{ base: "720px", md: "auto" }} position="relative">
             {/* Single shared lane */}
@@ -283,8 +288,8 @@ export function TimelineCanvas({ projects }: { projects: TimelineProject[] }) {
         </Text>
       </Box>
 
-      {/* Detail panel — 30% height */}
-      <Box flex="1 1 30%" minH="0" display="flex">
+      {/* Detail panel */}
+      <Box flex={detailFlex} minH="0" display="flex">
         <Box flex="1" display="flex">
           <DetailPanel
             target={activeTarget}
@@ -292,6 +297,8 @@ export function TimelineCanvas({ projects }: { projects: TimelineProject[] }) {
             today={today}
             pinned={pinned !== null}
             onClearPin={() => setPinned(null)}
+            expanded={expanded}
+            onToggleExpand={() => setExpanded((v) => !v)}
           />
         </Box>
       </Box>

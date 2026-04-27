@@ -32,12 +32,16 @@ export function DetailPanel({
   today,
   pinned = false,
   onClearPin,
+  expanded = false,
+  onToggleExpand,
 }: {
   target: DetailTarget | null;
   projects: TimelineProject[];
   today: Date;
   pinned?: boolean;
   onClearPin?: () => void;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }) {
   const entry = findEntry(target, projects);
   const empty = !entry;
@@ -58,7 +62,7 @@ export function DetailPanel({
     >
       <HStack justify="space-between" align="center">
         <Text
-          fontSize="11px"
+          fontSize="xs"
           fontWeight="semibold"
           textTransform="uppercase"
           letterSpacing="0.2em"
@@ -66,21 +70,39 @@ export function DetailPanel({
         >
           {pinned ? "Pinned" : "Hover detail"}
         </Text>
-        {pinned && onClearPin ? (
-          <Text
-            as="button"
-            onClick={onClearPin}
-            fontSize="11px"
-            fontWeight="medium"
-            color="fg.faint"
-            letterSpacing="0.08em"
-            textTransform="uppercase"
-            cursor="pointer"
-            _hover={{ color: "fg" }}
-          >
-            × Unpin
-          </Text>
-        ) : null}
+        <HStack gap="3">
+          {pinned && onClearPin ? (
+            <Text
+              as="button"
+              onClick={onClearPin}
+              fontSize="xs"
+              fontWeight="medium"
+              color="fg.faint"
+              letterSpacing="0.08em"
+              textTransform="uppercase"
+              cursor="pointer"
+              _hover={{ color: "fg" }}
+            >
+              × Unpin
+            </Text>
+          ) : null}
+          {onToggleExpand ? (
+            <Text
+              as="button"
+              onClick={onToggleExpand}
+              fontSize="xs"
+              fontWeight="medium"
+              color="fg.faint"
+              letterSpacing="0.08em"
+              textTransform="uppercase"
+              cursor="pointer"
+              _hover={{ color: "fg" }}
+              aria-label={expanded ? "Collapse detail panel" : "Expand detail panel"}
+            >
+              {expanded ? "↓ Collapse" : "↑ Expand"}
+            </Text>
+          ) : null}
+        </HStack>
       </HStack>
 
       <AnimatePresence mode="wait">
@@ -93,13 +115,13 @@ export function DetailPanel({
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
           >
-            <Heading as="h3" fontSize={{ base: "md", md: "lg" }} fontWeight="semibold" color="fg">
+            <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} fontWeight="semibold" color="fg">
               Hover a bar or marker
             </Heading>
-            <Text mt="1.5" color="fg.muted" fontSize="sm" lineHeight="1.6">
+            <Text mt="2" color="fg.muted" fontSize="md" lineHeight="1.6">
               Bars show project duration. Diamonds are milestones — hover for notes, click to pin.
             </Text>
-            <Stack gap="1.5" mt="2.5" fontSize="xs" color="fg.muted">
+            <Stack gap="2" mt="3" fontSize="sm" color="fg.muted">
               <HStack gap="3">
                 <Box w="22px" h="5px" rounded="full" bg="cyan.300" />
                 <Text>Bar = project duration</Text>
@@ -138,22 +160,22 @@ export function DetailPanel({
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
           >
-            <HStack gap="2.5" mb="2" wrap="wrap">
+            <HStack gap="3" mb="2.5" wrap="wrap">
               <Box
-                w="10px"
-                h="10px"
+                w="12px"
+                h="12px"
                 rounded="full"
                 bg={entry.project.accent}
                 boxShadow={`0 0 0 3px ${entry.project.accent}33`}
               />
-              <Text fontSize="xs" fontWeight="medium" color="fg.muted" letterSpacing="0.14em" textTransform="uppercase">
+              <Text fontSize="sm" fontWeight="medium" color="fg.muted" letterSpacing="0.14em" textTransform="uppercase">
                 {entry.project.name}
               </Text>
               <Badge
                 rounded="pill"
-                px="2"
+                px="2.5"
                 py="0.5"
-                fontSize="10px"
+                fontSize="xs"
                 textTransform="uppercase"
                 letterSpacing="0.12em"
                 colorPalette={STATUS_TONE[entry.project.status] ?? "blue"}
@@ -189,18 +211,18 @@ function ProjectBody({
   const days = start && end ? Math.max(1, daysBetween(start, end)) : 0;
 
   return (
-    <Stack gap="2">
-      <Heading as="h3" fontSize={{ base: "lg", md: "xl" }} fontWeight="semibold" lineHeight="1.2">
+    <Stack gap="3">
+      <Heading as="h3" fontSize={{ base: "xl", md: "2xl" }} fontWeight="semibold" lineHeight="1.2">
         {project.name}
       </Heading>
       {project.description ? (
-        <Text color="fg.muted" fontSize="sm" lineHeight="1.55">
+        <Text color="fg.muted" fontSize="md" lineHeight="1.6">
           {project.description}
         </Text>
       ) : null}
-      <HStack gap="3" wrap="wrap" fontSize="xs">
-        <HStack gap="1.5">
-          <Text color="fg.faint" textTransform="uppercase" letterSpacing="0.14em">
+      <HStack gap="4" wrap="wrap" fontSize="sm">
+        <HStack gap="2">
+          <Text color="fg.faint" textTransform="uppercase" letterSpacing="0.14em" fontSize="xs">
             Duration
           </Text>
           <Text color="fg" fontWeight="medium">
@@ -212,7 +234,7 @@ function ProjectBody({
           · {project.features.length} marker{project.features.length === 1 ? "" : "s"}
         </Text>
         {project.link ? (
-          <ChakraLink asChild fontSize="xs" color="cyan.300" _hover={{ color: "cyan.200" }}>
+          <ChakraLink asChild fontSize="sm" color="cyan.300" _hover={{ color: "cyan.200" }}>
             <NextLink href={project.link}>Open →</NextLink>
           </ChakraLink>
         ) : null}
@@ -231,55 +253,37 @@ function FeatureBody({
   const date = parseDate(feature.date);
 
   return (
-    <Stack gap="4">
-      <HStack gap="4" align="start">
+    <Stack gap="3">
+      <HStack gap="3" align="center" wrap="wrap">
         <Box
-          w="20px"
-          h="20px"
+          w="14px"
+          h="14px"
           bg={projectAccent}
-          transform="rotate(45deg) translateY(2px)"
+          transform="rotate(45deg)"
           flexShrink={0}
-          mt="2"
         />
-        <Heading as="h3" fontSize={{ base: "2xl", md: "3xl" }} fontWeight="semibold" lineHeight="1.2">
+        <Heading as="h3" fontSize={{ base: "xl", md: "2xl" }} fontWeight="semibold" lineHeight="1.2">
           {feature.name}
         </Heading>
+        <Text fontSize="sm" color="fg.faint" letterSpacing="0.06em">
+          · {date ? formatDate(date) : feature.date}
+        </Text>
       </HStack>
       {feature.brief ? (
         <Text
-          fontSize={{ base: "md", md: "lg" }}
+          fontSize="md"
           color="fg.muted"
           fontWeight="medium"
-          lineHeight="1.5"
+          lineHeight="1.55"
           fontStyle="italic"
         >
           {feature.brief}
         </Text>
       ) : null}
-      <Box
-        rounded="lg"
-        borderWidth="1px"
-        borderColor="border"
-        bg="bg.muted"
-        px="4"
-        py="3"
-      >
-        <Text fontSize="sm" color="fg.faint" textTransform="uppercase" letterSpacing="0.16em">
-          Date
-        </Text>
-        <Text mt="1.5" fontSize="md" color="fg" fontWeight="semibold">
-          {date ? formatDate(date) : feature.date}
-        </Text>
-      </Box>
       {feature.notes ? (
-        <Box>
-          <Text fontSize="sm" color="fg.faint" textTransform="uppercase" letterSpacing="0.16em">
-            Notes
-          </Text>
-          <Text mt="2" color="fg.muted" fontSize="md" lineHeight="1.7">
-            {feature.notes}
-          </Text>
-        </Box>
+        <Text color="fg.muted" fontSize="md" lineHeight="1.65">
+          {feature.notes}
+        </Text>
       ) : null}
     </Stack>
   );
